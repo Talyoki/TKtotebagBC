@@ -1,6 +1,7 @@
 package fr.talyoki.tktotebagbc.cmd;
 
 import fr.talyoki.tktotebagbc.data.ErrorMsg;
+import fr.talyoki.tktotebagbc.utils.StringUtil;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
@@ -12,6 +13,8 @@ import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class ServerCmd extends Command
@@ -67,24 +70,44 @@ public class ServerCmd extends Command
 			if(this.hasServerOtherPermission(sender))
 			{
 				// Récupération du joueur ciblé
-				ProxiedPlayer player = ProxyServer.getInstance().getPlayer(args[1]);
-				if(player != null)
+				// Autocompletion
+				final List<ProxiedPlayer> resultPlayers = new ArrayList<ProxiedPlayer>();
+				StringUtil.getPartialMatchesPlayer(args[1], ProxyServer.getInstance().getPlayers(), resultPlayers);
+
+				// Si plusieurs choix sont possible on return
+				if(resultPlayers.size() == 1)
 				{
-					// Récupération du serveur ciblé
-					ServerInfo target = ProxyServer.getInstance().getServerInfo(args[0]);
-					if(target != null && !player.getServer().getInfo().getName().equalsIgnoreCase(args[0]))
+					// Récupération du 1er résultats
+					String pseudo = resultPlayers.get(0).getName();
+
+					ProxiedPlayer player = ProxyServer.getInstance().getPlayer(pseudo);
+					if(player != null)
 					{
+						// Récupération du serveur ciblé
+						ServerInfo target = ProxyServer.getInstance().getServerInfo(args[0]);
+						// Si le serveur existe pas
+						if(target == null)
+						{
+							sender.sendMessage(new TextComponent(ChatColor.RED + "Ce serveur n'existe pas"));
+							return;
+						}
+						// si le joueur est deja sur ce serveur
+						if(player.getServer().getInfo().getName().equalsIgnoreCase(args[1]))
+						{
+							sender.sendMessage(new TextComponent(ChatColor.RED + "Le joueur est déjà sur ce serveur"));
+							return;
+						}
 						// Téléportation du joueur
 						player.connect(target);
 					}
 					else
 					{
-						sender.sendMessage(new TextComponent(ChatColor.RED + "Le joueur est déjà sur ce serveur"));
+						sender.sendMessage(new TextComponent(ChatColor.RED + "Le joueur n'est pas connecté"));
 					}
 				}
 				else
 				{
-					sender.sendMessage(new TextComponent(ChatColor.RED + "Le joueur n'est pas connecté"));
+					sender.sendMessage(new TextComponent(ChatColor.RED + "Trop de choix possible"));
 				}
 			}
 			else
@@ -99,11 +122,13 @@ public class ServerCmd extends Command
 				// Récupération du serveur ciblé
 				ServerInfo target = ProxyServer.getInstance().getServerInfo(args[0]);
 				ProxiedPlayer player = (ProxiedPlayer) sender;
+				// Si le serveur demandé n'existe pas
 				if(target == null)
 				{
 					sender.sendMessage(new TextComponent(ChatColor.RED + "Ce serveur n'existe pas"));
 					return;
 				}
+				// Si le joueur est déjà sur ce serveur
 				if(player.getServer().getInfo().getName().equalsIgnoreCase(args[0]))
 				{
 					sender.sendMessage(new TextComponent(ChatColor.RED + "Tu es déjà sur ce serveur"));
