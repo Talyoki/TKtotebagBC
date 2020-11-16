@@ -1,12 +1,16 @@
 package fr.talyoki.tktotebagbc.cmd;
 
 import fr.talyoki.tktotebagbc.data.ErrorMsg;
+import fr.talyoki.tktotebagbc.utils.StringUtil;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PingCmd extends Command
 {
@@ -21,7 +25,20 @@ public class PingCmd extends Command
 		{
 			if(this.hasPingOtherPermission(sender))
 			{
-				ProxiedPlayer player = ProxyServer.getInstance().getPlayer(args[0]);
+				// Autocompletion
+				final List<ProxiedPlayer> resultPlayers = new ArrayList<ProxiedPlayer>();
+				StringUtil.getPartialMatchesPlayer(args[0], ProxyServer.getInstance().getPlayers(), resultPlayers);
+				// Si plusieurs choix sont possible on return
+				if(resultPlayers.size() != 1)
+				{
+					return;
+				}
+
+				// Récupération du 1er résultats
+				String pseudo = resultPlayers.get(0).getName();
+
+				ProxiedPlayer player = ProxyServer.getInstance().getPlayer(pseudo);
+				// So le joueur demandé n'est pas connecté
 				if(player != null)
 				{
 					sender.sendMessage(new TextComponent(ChatColor.GOLD + "Le ping de " + player.getName() + " est de " + player.getPing() + " ms"));
