@@ -28,8 +28,6 @@ public class PingCmd extends Command
 				// Autocompletion
 				final List<ProxiedPlayer> resultPlayers = new ArrayList<ProxiedPlayer>();
 				StringUtil.getPartialMatchesPlayer(args[0], ProxyServer.getInstance().getPlayers(), resultPlayers);
-
-
 				// Si plusieurs choix sont possible on return
 				if(resultPlayers.size() != 1)
 				{
