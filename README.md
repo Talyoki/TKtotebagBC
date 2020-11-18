@@ -6,6 +6,7 @@ A Bungee totebag plugin
  - You can get your ping or that of other players
  - You can get the server list clickable.
  - You can teleport itself or other players to a another server.
+ - Communicate with NKtotebag
 ###### Commands
 - /ping - (tktotebagbc.ping.self)
 - /ping [player] - (tktotebagbc.ping.other)
