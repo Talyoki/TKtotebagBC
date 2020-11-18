@@ -26,6 +26,11 @@ public class ServerCmd extends Command
 
 	public void execute(CommandSender sender, String[] args)
 	{
+		if(!this.hasServerListPermission(sender))
+		{
+			sender.sendMessage(new TextComponent(String.valueOf(ErrorMsg.ERROR_PERM)));
+			return;
+		}
 		if(args.length < 1)
 		{
 			// Récupération de la liste des serveurs
@@ -69,6 +74,11 @@ public class ServerCmd extends Command
 		{
 			if(this.hasServerOtherPermission(sender))
 			{
+				if(!this.hasByServerOtherPermission(sender, args[0]))
+				{
+					sender.sendMessage(new TextComponent(String.valueOf(ErrorMsg.ERROR_PERM)));
+					return;
+				}
 				// Récupération du joueur ciblé
 				// Autocompletion
 				final List<ProxiedPlayer> resultPlayers = new ArrayList<ProxiedPlayer>();
@@ -117,7 +127,7 @@ public class ServerCmd extends Command
 		}
 		else
 		{
-			if(this.hasServerPermission(sender))
+			if(this.hasByServerPermission(sender, args[0]))
 			{
 				// Récupération du serveur ciblé
 				ServerInfo target = ProxyServer.getInstance().getServerInfo(args[0]);
@@ -144,13 +154,23 @@ public class ServerCmd extends Command
 		}
 	}
 
-	public boolean hasServerPermission(CommandSender sender)
+	public boolean hasServerListPermission(CommandSender sender)
 	{
-		return sender.hasPermission("tktotebagbc.server.self");
+		return sender.hasPermission("tktotebagbc.server");
 	}
 
 	public boolean hasServerOtherPermission(CommandSender sender)
 	{
 		return sender.hasPermission("tktotebagbc.server.other");
+	}
+
+	public boolean hasByServerOtherPermission(CommandSender sender, String world)
+	{
+		return sender.hasPermission("tktotebagbc.server.other." + world);
+	}
+
+	public boolean hasByServerPermission(CommandSender sender, String world)
+	{
+		return sender.hasPermission("tktotebagbc.server." + world);
 	}
 }
