@@ -33,7 +33,7 @@ public class PluginMessageReceiver implements Listener
 			return;
 		}
 
-		if(!ProxyServer.getInstance().getPluginManager().isExecutableCommand(args[1], player))
+		if(!ProxyServer.getInstance().getPluginManager().isExecutableCommand(args[1].split(" ")[0], player))
 		{
 			ProxyServer.getInstance().getLogger().log(Level.WARNING, "[TKtotebagBC] : Une commande sudo a été exécutée mais la commande demandée n'existe pas");
 			player.sendMessage(new TextComponent(ChatColor.RED + "Vous avez été forcé de faire une commande qui n'existe pas"));
