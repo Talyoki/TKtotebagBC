@@ -1,6 +1,7 @@
 package fr.talyoki.tktotebagbc.cmd;
 
 import fr.talyoki.tktotebagbc.data.ErrorMsg;
+import fr.talyoki.tktotebagbc.data.Permissions;
 import fr.talyoki.tktotebagbc.utils.StringUtil;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
@@ -12,12 +13,14 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
+import net.md_5.bungee.api.plugin.TabExecutor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class ServerCmd extends Command
+public class ServerCmd extends Command implements TabExecutor
 {
 	public ServerCmd()
 	{
@@ -46,22 +49,25 @@ public class ServerCmd extends Command
 			// Génération de la liste
 			for(ServerInfo serverInfo : serverList.values())
 			{
-				TextComponent serverServerPrint = null;
+				TextComponent serverServerPrint = new TextComponent("");
 
-				if(servActu.equalsIgnoreCase(serverInfo.getName()))
+				if(this.hasByServerPermission(sender, serverInfo.getName()))
 				{
-					// Serveur du joueur
-					serverServerPrint = new TextComponent(
-							"[" + ChatColor.STRIKETHROUGH + serverInfo.getName() + ChatColor.RESET + ChatColor.GOLD + "] ");
-					serverServerPrint.setHoverEvent(new HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new Text(
-							ChatColor.RED + "Tu es sur ce serveur")));
-				}
-				else
-				{
-					// Autres serveurs
-					serverServerPrint = new TextComponent("[" + serverInfo.getName() + "] ");
-					serverServerPrint.setHoverEvent(new HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new Text("Rejoindre ce serveur")));
-					serverServerPrint.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/server " + serverInfo.getName()));
+					if(servActu.equalsIgnoreCase(serverInfo.getName()))
+					{
+						// Serveur du joueur
+						serverServerPrint = new TextComponent(
+								"[" + ChatColor.STRIKETHROUGH + serverInfo.getName() + ChatColor.RESET + ChatColor.GOLD + "] ");
+						serverServerPrint.setHoverEvent(new HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new Text(
+								ChatColor.RED + "Tu es sur ce serveur")));
+					}
+					else
+					{
+						// Autres serveurs
+						serverServerPrint = new TextComponent("[" + serverInfo.getName() + "] ");
+						serverServerPrint.setHoverEvent(new HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new Text("Rejoindre ce serveur")));
+						serverServerPrint.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/server " + serverInfo.getName()));
+					}
 				}
 
 				// Envoie de la liste clickable au joueur
@@ -156,21 +162,67 @@ public class ServerCmd extends Command
 
 	public boolean hasServerListPermission(CommandSender sender)
 	{
-		return sender.hasPermission("tktotebagbc.server");
+		return sender.hasPermission(Permissions.CMD_SERVER.toString());
 	}
 
 	public boolean hasServerOtherPermission(CommandSender sender)
 	{
-		return sender.hasPermission("tktotebagbc.server.other");
+		return sender.hasPermission(Permissions.CMD_SERVER_OTHER.toString());
 	}
 
 	public boolean hasByServerOtherPermission(CommandSender sender, String world)
 	{
-		return sender.hasPermission("tktotebagbc.server.other." + world);
+		return sender.hasPermission(Permissions.CMD_SERVER_OTHER_BY_NAME + world);
 	}
 
 	public boolean hasByServerPermission(CommandSender sender, String world)
 	{
-		return sender.hasPermission("tktotebagbc.server." + world);
+		return sender.hasPermission(Permissions.CMD_SERVER_BY_NAME + world);
+	}
+
+	// auto completion
+	@Override
+	public Iterable<String> onTabComplete(CommandSender commandSender, String[] args)
+	{
+		// Récupération de la liste des serveurs
+		Map<String, ServerInfo> serverList = ProxyServer.getInstance().getServers();
+
+		if(args.length == 1)
+		{
+			List<String> list = new ArrayList<>();
+			for(ServerInfo serverInfo : serverList.values())
+			{
+				if(commandSender.hasPermission(Permissions.CMD_SERVER_BY_NAME + serverInfo.getName()))
+				{
+					list.add(serverInfo.getName());
+				}
+			}
+
+			final List<String> completions = new ArrayList<>();
+			StringUtil.copyPartialMatches(args[0], list, completions);
+
+			return completions;
+		}
+
+		// Récupération de la liste des joueurs
+		Collection<ProxiedPlayer> playerList = ProxyServer.getInstance().getPlayers();
+
+		if(args.length == 2)
+		{
+			if(commandSender.hasPermission(Permissions.CMD_SERVER_OTHER_BY_NAME + args[0]))
+			{
+				List<String> list = new ArrayList<>();
+				for(ProxiedPlayer player : playerList)
+				{
+					list.add(player.getName());
+				}
+
+				final List<String> completions = new ArrayList<>();
+				StringUtil.copyPartialMatches(args[1], list, completions);
+
+				return completions;
+			}
+		}
+		return new ArrayList<>();
 	}
 }

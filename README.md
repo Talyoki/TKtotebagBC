@@ -10,5 +10,6 @@ A Bungee totebag plugin
 ###### Commands
 - /ping - (tktotebagbc.ping.self)
 - /ping [player] - (tktotebagbc.ping.other)
-- /server - (tktotebagbc.server.self)
+- /server - (tktotebagbc.server)
+- /server [server] - (tktotebagbc.server.[servername])
 - /server [server] (player) - (tktotebagbc.server.other)
