@@ -96,10 +96,7 @@ public class PingCmd extends Command implements TabExecutor
 			List<String> list = new ArrayList<>();
 			for(ProxiedPlayer player:playerList)
 			{
-				if(commandSender.hasPermission(Permissions.CMD_PING_OTHER.toString()))
-				{
-					list.add(player.getName());
-				}
+				list.add(player.getName());
 			}
 
 			final List<String> completions = new ArrayList<>();
